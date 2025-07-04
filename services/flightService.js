@@ -14,4 +14,10 @@ const getAllFlights = async () => {
   return await Flight.find().sort({ departure: 1 });
 };
 
-module.exports = { createFlight, getAllFlights };
+const getFlight = async (flightId) => {
+  const flight = await Flight.findById(flightId).sort({ departure: 1 });
+  if (!flight) throw new Error("Flight not founds");
+  return flight;
+};
+
+module.exports = { createFlight, getAllFlights, getFlight };
