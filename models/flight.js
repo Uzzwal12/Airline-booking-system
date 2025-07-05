@@ -1,6 +1,6 @@
 const { Schema, model } = require("mongoose");
 
-const flightSchmea = new Schema(
+const flightSchema = new Schema(
   {
     flightNumber: {
       type: String,
@@ -41,14 +41,26 @@ const flightSchmea = new Schema(
         required: true,
       },
     },
-    seatsAvailable: {
+    seats: {
       economy: {
-        type: Number,
-        required: true,
+        total: {
+          type: Number,
+          required: true,
+        },
+        available: {
+          type: Number,
+          required: true,
+        },
       },
       business: {
-        type: Number,
-        required: true,
+        total: {
+          type: Number,
+          required: true,
+        },
+        available: {
+          type: Number,
+          required: true,
+        },
       },
     },
     seatMap: {
@@ -59,4 +71,4 @@ const flightSchmea = new Schema(
   { timestamps: true }
 );
 
-module.exports = model("Flight", flightSchmea);
+module.exports = model("Flight", flightSchema);

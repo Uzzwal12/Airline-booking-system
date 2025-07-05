@@ -1,4 +1,7 @@
-const { bookSeatsWithTransaction } = require("../services/bookingService");
+const {
+  bookSeatsWithTransaction,
+  cancelBookingService,
+} = require("../services/bookingService");
 
 const createBooking = async (req, res) => {
   try {
@@ -17,4 +20,24 @@ const createBooking = async (req, res) => {
   }
 };
 
-module.exports = { createBooking };
+const cancelBooking = async (req, res) => {
+  try {
+    console.log("req", req.params);
+    const userId = req.user.id;
+    const bookingId = req.params.id;
+
+    const userRole = req.user.role;
+    const result = await cancelBookingService({
+      bookingId,
+      userId,
+      userRole,
+    });
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Booking cancel error:", error.message);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+module.exports = { createBooking, cancelBooking };

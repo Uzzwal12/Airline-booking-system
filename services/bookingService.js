@@ -57,6 +57,10 @@ const bookSeatsWithTransaction = async ({
     // 6. Insert all seat bookings in transaction
     const inserted = await Booking.insertMany(bookings, { session });
 
+    flight.seats[travelClass].available -= seats.length;
+
+    await flight.save({ session });
+
     await session.commitTransaction();
     session.endSession();
 
@@ -81,6 +85,61 @@ const bookSeatsWithTransaction = async ({
   }
 };
 
+const cancelBookingService = async ({ bookingId, userId, userRole }) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const booking = await Booking.findById(bookingId)
+      .populate("flight")
+      .session(session);
+
+    if (!booking) throw new Error("Booking not found");
+
+    if (
+      booking.user.toString() !== userId &&
+      !["admin", "staff"].includes(userRole)
+    )
+      throw new Error("You are not allowed to cancel this booking");
+
+    if (booking.status === "cancelled")
+      throw new Error("Booking are already cancelled.");
+
+    const now = new Date();
+    const departure = new Date(booking.flight.departure.time);
+
+    const hoursBefore = (departure - now) / (1000 * 60 * 60);
+
+    if (hoursBefore < 2) {
+      throw new Error("You cannot cancel 2 hours before the flight");
+    }
+
+    booking.status = "cancelled";
+    booking.cancelledAt = now;
+    booking.cancelledBy = userId;
+
+    await booking.save({ session });
+
+    const flight = await Flight.findById(booking.flight._id).session(session);
+    flight.seats[booking.travelClass].available += 1;
+    await flight.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return {
+      message: "Booking cancelled successfully",
+      seat: booking.seat,
+      cancelledAt: now,
+    };
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw new Error(err.message);
+  }
+};
+
 module.exports = {
   bookSeatsWithTransaction,
+  cancelBookingService,
 };

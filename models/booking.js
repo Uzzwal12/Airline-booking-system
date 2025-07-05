@@ -38,6 +38,13 @@ const bookingSchema = new Schema(
       enum: ["pending", "confirmed", "failed", "cancelled"],
       default: "pending",
     },
+    cancelledAt: {
+      type: Date,
+    },
+    cancelledBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
   { timestamps: true }
 );

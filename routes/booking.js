@@ -1,5 +1,8 @@
 const express = require("express");
-const { createBooking } = require("../controllers/bookingController");
+const {
+  createBooking,
+  cancelBooking,
+} = require("../controllers/bookingController");
 const {
   bookingValidation,
 } = require("../middleware/validators/bookingValidator");
@@ -18,5 +21,7 @@ bookingRouter.post(
   handleValidation,
   createBooking
 );
+
+bookingRouter.patch("/:id/cancel", protect, cancelBooking);
 
 module.exports = { bookingRouter };
